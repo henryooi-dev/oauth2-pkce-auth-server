@@ -208,7 +208,7 @@ app.post("/token", async (req, res) => {
     const newRefreshToken = generateCode();
     refreshTokens.set(newRefreshToken, {
       client_id: client_id,
-      sub: record.user.sub,
+      sub: record.sub,
       scope: record.scope,
       expires_at: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
     });
@@ -221,16 +221,19 @@ app.post("/token", async (req, res) => {
       });
     }
 
+    const user = getDemoUser();
     // Create access token
     const accessToken = await new SignJWT({
       scope: record.scope,
       sub: record.sub,
+      name: user.name,
+      email: user.email,
     })
       .setProtectedHeader({ alg: "RS256", kid: KEY_ID })
       .setIssuer(ISSUER)
       .setAudience(client_id)
       .setSubject(record.sub)
-      .setExpirationTime("1h")
+      .setExpirationTime("15m")
       .setIssuedAt()
       .sign(PRIVATE_KEY);
 
